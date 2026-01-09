@@ -1,0 +1,99 @@
+def calcularDanio(ataque, defensa):
+    danio = ataque - defensa
+    if danio < 1:
+        danio = 1
+    return danio
+
+
+def mostrarEstado(jugador, enemigo):
+    print(f"{jugador['nombre']} vida: {jugador['vida']}")
+    print(f"{enemigo['nombre']} vida: {enemigo['vida']}")
+    print(f"pociones: {jugador['pocion']}")
+
+
+def turno_jugador(jugador, enemigo):
+    defendiendo = False
+    accion = ""
+    while accion not in ("1", "2", "3"):
+        accion = input("¿Acción? (1=Atacar, 2=Curarse, 3=Defender): ")
+
+    if accion == "1":
+        danio = calcularDanio(jugador['ataque'], enemigo['defensa'])
+        enemigo['vida'] -= danio
+        print(f"{jugador['nombre']} hizo {danio} de daño a {enemigo['nombre']}")
+
+    elif accion == "2":
+        if jugador['pocion'] > 0:
+            cura = 30
+            jugador['vida'] += cura
+            if jugador['vida'] > jugador['vidaMax']:
+                jugador['vida'] = jugador['vidaMax']
+            jugador['pocion'] -= 1
+            print(f"{jugador['nombre']} se curó {cura}. pociones restantes: {jugador['pocion']}")
+        else:
+            print("no te quedan pociones.")
+
+    elif accion == "3":
+        defendiendo = True
+        print(f"{jugador['nombre']} se puso en modo DEFENSA")
+
+    return defendiendo
+
+
+def turno_enemigo(enemigo, jugador, defendiendo):
+    defensa_activa = jugador['defensa']
+    if defendiendo:
+        defensa_activa = jugador['defensa'] * 2
+
+    danio = calcularDanio(enemigo['ataque'], defensa_activa)
+    jugador['vida'] -= danio
+    print(f"{enemigo['nombre']} hizo {danio} de daño a {jugador['nombre']}")
+
+
+jugador = {'nombre': 'Tanuki', 'vida': 587, 'vidaMax': 587, 'ataque': 80, 'defensa': 15, 'pocion': 2}
+enemigos = [ {'nombre': 'Orco', 'vida': 390, 'ataque': 40, 'defensa': 10},
+            {'nombre':'esqueleto','vida':200,'ataque':25,'defensa':8},
+            {'nombre':'lobo','vida':320,'ataque':55,'defensa':18}
+            ]
+            
+indice = 0
+
+while indice < len(enemigos) and jugador['vida'] > 0:
+    enemigo = enemigos[indice]
+    print(f"\n Aparece {enemigo['nombre']}!")
+    
+    
+
+    while jugador['vida'] > 0 and enemigo['vida'] > 0:
+        mostrarEstado(jugador, enemigo)
+
+        defendiendo = turno_jugador(jugador, enemigo)
+
+        if enemigo['vida'] <= 0:
+            print(f"{enemigo['nombre']}, Derrotado!")
+            break
+
+
+        turno_enemigo(enemigo, jugador, defendiendo)
+
+        if jugador['vida'] <= 0:
+            print("Has sido derrotado. Perdiste :(")
+            break
+        
+    if jugador['vida'] > 0:
+        print(f"¡Derrotaste a {enemigo['nombre']}!")
+        indice += 1
+        jugador['pocion'] += 1
+        print("🎁 Ganaste 1 poción!")
+        jugador['vida'] = min(jugador['vidaMax'], jugador['vida'] + 20)
+        print("✨ Recuperaste 20 de vida.")
+        print("-" *30)
+        continue
+    
+
+    
+if jugador['vida'] > 0:
+    print(f"\n Ganaste! Has derrotado a todos los enemigos.")
+else:
+    print("\n Game Over. Te quedaste sin vida :(.")
+
